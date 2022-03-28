@@ -3,15 +3,33 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ORM\Table(name="`user`")
+ * @ApiResource( 
+ *      collectionOperations={
+ *          "get"={
+ *              "normalization_context"={"groups"={"user_read"}}
+ *          },
+ *          "post"
+ *      },
+ *      itemOperations={
+ *          "get"={
+ *              "normalization_context"={"groups"={"user_details_read"}}
+ *          },
+ *          "put",
+ *          "patch",
+ *          "delete"
+ *      }
+ * )
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -20,6 +38,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     use Timestampable;
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Groups({
+     *      "user_read",
+     *      "user_details_read",
+     *      "voiture_details_read"
+     * })
      */
     private $email;
 
@@ -36,6 +59,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\OneToMany(targetEntity=Voiture::class, mappedBy="author")
+     * @Groups({
+     *      "user_details_read"
+     * })
      */
     private $voitures;
 

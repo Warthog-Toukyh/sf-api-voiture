@@ -3,10 +3,35 @@
 namespace App\Entity;
 
 use App\Repository\VoitureRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use App\Controller\VoitureUpdatedAt;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=VoitureRepository::class)
+ * @ApiResource(
+ *      collectionOperations={
+ *          "get"={
+ *              "normalization_context"={"groups"={"voiture_read"}}
+ *          },
+ *          "post"
+ *      },
+ *      itemOperations={
+ *          "get"={
+ *              "normalization_context"={"groups"={"voiture_details_read"}}
+ *          },
+ *          "put",
+ *          "patch",
+ *          "delete",
+ *          "put_updated_at"={
+ *              "method"="PUT",
+ *              "path"="/voitures/{id}",
+ *              "controller"=VoitureUpdatedAt::class,
+ *          }
+ *      }
+ * )
  */
 class Voiture
 {
@@ -15,28 +40,51 @@ class Voiture
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({
+     *      "voiture_read",
+     *      "user_details_read",
+     *      "voiture_details_read"
+     * })
      */
     private $marque;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({
+     *      "user_details_read",
+     *      "voiture_read",
+     *      "voiture_details_read"
+     * })
      */
     private $modele;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({
+     *      "user_details_read",
+     *      "voiture_read",
+     *      "voiture_details_read"
+     * })
      */
     private $edition;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({
+     *      "voiture_read",
+     *      "voiture_details_read"
+     * })
      */
     private $description;
 
+
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="voitures")
+     * @Groups({
+     *      "voiture_details_read"
+     * })
      */
-    private $author;
+    private UserInterface $author;
 
     public function __construct()
     {
@@ -91,12 +139,12 @@ class Voiture
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): UserInterface
     {
         return $this->author;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthor(UserInterface $author): self
     {
         $this->author = $author;
 
